@@ -1,0 +1,289 @@
+\section{C++ Object-Oriented Implementation}
+The C++ object-oriented implementation of the finite element method is based on the LehrFEM++ library for the 2D problem, and relies on a self-developed $Eigen$-based code for the 1D case. In this section, we discuss the most important aspects of the implementation, such as the Galerkin matrices assembly, treatment of the Dirichlet boundary conditions, sinc quadrature and the time stepping.
+
+%---------------------------- Galerkin matrices assembly
+\subsection{Galerkin Matrices Assembly}
+The Galerkin matrices assembly is implemented in \textit{space\_discr.h}.
+For the 1D problem, the assembly is done directly inside the function in \eqref{mass_1d}, returning a vector of triplets for the non-zero entries. An example is the following assembly of the mass matrix $\mass^{\gamma(x)}$ with a general coefficient $\gamma(x)$, using the local trapezoidal rule.
+\begin{lstlisting}[caption={1D assembly of the mass matrix with general coefficient $\gamma$.}, label={mass_1d}] 
+using TripletForm = std::vector<Triplet>; 
+template <typename FUNCTOR>
+TripletForm getMassMatrixWeighted_TripletForm(const Eigen::VectorXd &mesh, FUNCTOR gamma) {
+  TripletForm triplets;
+  unsigned M = mesh.size() - 1;
+  triplets.reserve(M + 1);
+
+  /* Diagonal Entries*/
+  double diagEntry = 0.5 * gamma(mesh(0)) * (mesh(1)-mesh(0)); 
+  triplets.push_back(Triplet(0,0,diagEntry));
+  
+  diagEntry = 0.5 * gamma(mesh(M)) * (mesh(M) - mesh(M-1)); 
+  triplets.push_back(Triplet(M,M,diagEntry));
+  
+  for (int i=1; i<M; i++){
+	  double dx_right = mesh(i+1) - mesh(i);
+	  double dx_left = mesh(i) - mesh(i-1); 
+	  diagEntry = 0.5 * gamma(mesh(i)) * (dx_right+dx_left);
+	  triplets.push_back(Triplet(i,i,diagEntry));
+  }
+  return triplets;
+}
+\end{lstlisting}
+However, transforming the matrix of type \lstinline{std::vector<Triplet>} to an actual sparse matrix of type \lstinline{Eigen::SparseMatrix<double>} is mandatory and is done in the main program, by calling the function \lstinline{setFromTriplet}. \\ \\
+In contrast, the assembly of the Galerkin matrices for the 2D problem relies on a distributing scheme. That is the element matrix is computed for each element of the mesh, and its entries are distributed to the full Galerkin matrix entries by the so called a local-global mapping. Motivated by this distributing scheme, 
+the code snippet \eqref{elem_base_class} provides a base class for an \lstinline{ElementMatrixProvider} object for the element matrix calculation. Note that in a code, one inherits from that base class a derived class where the coefficient function \lstinline{MAP coeff_mapping_} in the corresponding bilinear form is passed to the constructor.
+\begin{lstlisting}[caption={Element matrix provider base class.}, label={elem_base_class}] 
+  typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> elemMatrix; 
+  
+  /** 
+   * @base_class ElementMatrixProvider
+   *
+   * @brief Computing the element matrix corresponding to a cell 
+   *
+   * @tparam MAP the type of the corresponding coefficient functor
+   *
+   */
+  template<class MAP> 
+  class ElementMatrixProvider{ 
+    public: 
+      ElementMatrixProvider() {}
+      bool isActive(const lf::mesh::Entity& ){ return true; }
+      virtual const elemMatrix Eval(const lf::mesh::Entity&) = 0; 
+      virtual ~ElementMatrixProvider(){}
+    protected:
+      lf::quad::QuadRule myQuadRule_Tria_;
+	    lf::quad::QuadRule myQuadRule_Quad_;
+	    MAP coeff_mapping_; 
+      std::array<lf::uscalfe::PrecomputedScalarReferenceFiniteElement<double>, 5> fe_precomp_; 
+  };
+\end{lstlisting}
+The element matrix provider class stores 4 important member variables that are \lstinline{myQuadRule_Tria_}, \lstinline{myQuadRule_Quad_}, \lstinline{coeff_mapping_} and \lstinline{fe_precomp_}. The first two defines the quadrature rules to be used for the local integrations, for both triangular and quadrilateral elements. These definitions are done in the body of the constructor where the quadrature nodes and weights for each reference element are implemented. The object \lstinline{coeff_mapping_} is the corresponding coefficient of the bilinear form. On the other side, the object \lstinline{fe_precom_p_} stores precomputed values of the reference shape functions and their gradients, at the quadrature nodes on the reference elements. \\
+The main method \lstinline{ virtual const elemMatrix Eval(const lf::mesh::Entity&)} takes as input a \lstinline{const lf::mesh::Entity&} cell type and returns the element matrix corresponding to that cell using parametric finite elements. For example the element cross matrix with a general vector valued coefficient $\beta(x)$ is given by
+\begin{align*}
+\Big[\int_{K}\beta(x)^{\top} \nabla \phi_i(x) \phi_j(x)\Big]_{i,j=1}^{m} \der x &= 
+\Big[\int_{\hat{K}}\beta(\Phi_K(\hat{x}))^{\top} \nabla\phi_i(\Phi_K(\hat{x})) \phi_j(\Phi_K(\hat{x})) |D\Phi_K(\hat{x})| \der\hat{x}\Big]_{i,j=1}^{m} \nonumber \\ 
+&=\Big[\int_{\hat{K}}\beta(\Phi_K(\hat{x}))^{\top} D\Phi_K^{-\top} (\hat{x})\nabla\hat{\phi}_i(\hat{x}) \hat{\phi}_j(\hat{x}) |D\Phi_K(\hat{x})| \der\hat{x}\Big]_{i,j=1}^{m} \nonumber \\ 
+&=\Big[\sum_{l=1}^{q}\omega_l\beta(\Phi_K(\hat{\zeta_l}))^{\top} D\Phi_K^{-\top}(\hat{\zeta_l})\nabla\hat{\phi}_i(\hat{\zeta_l}) \hat{\phi}_j(\hat{\zeta_l}) |D\Phi_K(\hat{\zeta_l})| \Big]_{i,j=1}^{m} \nonumber \\ 
+&=\sum_{l=1}^{q}\omega_l\beta(\Phi_K(\hat{\zeta_l}))^{\top} |D\Phi_K(\hat{\zeta_l})|\Big[D\Phi_K^{-\top}(\hat{\zeta_l})\nabla\hat{\phi}_i(\hat{\zeta_l}) \hat{\phi}_j(\hat{\zeta_l}) \Big]_{i,j=1}^{m},
+\end{align*}
+where $m\in \{3,4\}$, $K$ is an element, $\hat{K}$ the corresponding reference element, $\Phi_K: \hat{K} \to K$ linear in the case of triangles and bilinear in the case of quadrilaterals, $(\omega_l)_{l=1}^q$ are the quadrature weights and $(\zeta_l)_{l=1}^q$ are the quadrature nodes on $\hat{K}$. The element mass matrix with a scalar valued coefficient $\gamma(x)$ is given by
+\begin{align*}
+\Big[\int_{K}\gamma(x) \phi_i(x) \phi_j(x)\Big]_{i,j=1}^{m} \der x &= 
+\Big[\int_{\hat{K}}\gamma(\Phi_K(\hat{x})) \phi_i(\Phi_K(\hat{x})) \phi_j(\Phi_K(\hat{x})) |D\Phi_K(\hat{x})| \der\hat{x}\Big]_{i,j=1}^{m} \nonumber \\ 
+&=\Big[\int_{\hat{K}}\gamma(\Phi_K(\hat{x})) \hat{\phi}_i(\hat{x}) \hat{\phi}_j(\hat{x}) |D\Phi_K(\hat{x})| \der\hat{x}\Big]_{i,j=1}^{m} \nonumber \\ 
+&=\Big[\sum_{l=1}^{q}\omega_l\gamma(\Phi_K(\hat{\zeta_l})) \hat{\phi}_i(\hat{\zeta_l}) \hat{\phi}_j(\hat{\zeta_l}) |D\Phi_K(\hat{\zeta_l})| \Big]_{i,j=1}^{m} \nonumber \\ 
+&=\sum_{l=1}^{q}\omega_l\gamma(\Phi_K(\hat{\zeta_l})) |D\Phi_K(\hat{\zeta_l})|\Big[\hat{\phi}_i(\hat{\zeta_l}) \hat{\phi}_j(\hat{\zeta_l}) \Big]_{i,j=1}^{m},
+\end{align*}
+and the stiffness matrix with a matrix valued coefficient $\alpha(x)$ is given by 
+\begin{align*}
+\Big[\int_{K}\alpha(x) \nabla \phi_i(x) \nabla\phi_j(x)\Big]_{i,j=1}^{m} \der x &= 
+\Big[\int_{\hat{K}}\alpha(\Phi_K(\hat{x})) \nabla\phi_i(\Phi_K(\hat{x})) \phi_j(\Phi_K(\hat{x})) |D\Phi_K(\hat{x})| \der\hat{x}\Big]_{i,j=1}^{m} \nonumber \\ 
+&=\Big[\int_{\hat{K}}\alpha(\Phi_K(\hat{x})) D\Phi_K^{-\top} (\hat{x})\nabla\hat{\phi}_i(\hat{x}) D\Phi_K^{-\top} (\hat{x})\nabla\hat{\phi}_j(\hat{x}) |D\Phi_K(\hat{x})| \der\hat{x}\Big]_{i,j=1}^{m} \nonumber \\ 
+&=\Big[\sum_{l=1}^{q}\omega_l\alpha(\Phi_K(\hat{\zeta_l})) D\Phi_K^{-\top}(\hat{\zeta_l})\nabla\hat{\phi}_i(\hat{\zeta_l}) D\Phi_K^{-\top} (\hat{x})\nabla\hat{\phi}_j(\hat{\zeta_l}) |D\Phi_K(\hat{\zeta_l})| \Big]_{i,j=1}^{m} \nonumber \\ 
+&=\sum_{l=1}^{q}\omega_l\alpha(\Phi_K(\hat{\zeta_l})) |D\Phi_K(\hat{\zeta_l})|\Big[D\Phi_K^{-\top}(\hat{\zeta_l})\nabla\hat{\phi}_i(\hat{\zeta_l}) D\Phi_K^{-\top} (\hat{x})\hat{\phi}_j(\hat{\zeta_l}) \Big]_{i,j=1}^{m}.
+\end{align*}
+Finally, the assembly is done in the main program using the function \lstinline{lf::assemble::AssembleMatrixLocally} that implements the previously discussed distributing scheme.
+
+%------------------------------ Sinc quadrature
+\subsection{Sinc Quadrature}
+Code \ref{sinc_matrix_class} defined in \textit{space\_discr.h} implements a \lstinline{SincMatrix} class that represents the $\sinc$ matrix object \eqref{sinc_quad}, where the matrix-vector \lstinline{*} operator is overloaded to implement equation \eqref{sinc_quad}. Note that $\sinc$ is not stored explicitly, and hence is accessed by matrix-vector operations. The operator \lstinline{*} takes a vector $\mathbf{f} \in \mathbb{R}^N$ and returns $\sinc\mathbf{f}$ as seen in line \eqref{op} of code \eqref{sinc_matrix_class}. 
+\begin{lstlisting}[caption={$\sinc$ matrix class.}, label={sinc_matrix_class}, escapechar=|]
+/**
+ * @class SincMatrix
+ *
+ * @brief Representing the sinc matrix Q, without storing its elements explicitly.
+ *        Accessing the matrix Q through matrix-vector product by overloading the * 	        operator.
+ *        Given f \in \mathbb{R}^n, the * method returns Q*f.
+ *
+ */
+class SincMatrix{
+  public:
+    template<typename T> 
+    SincMatrix(T&&); /// Move and copy constructors 
+    template<typename T> 
+    SincMatrix(double, T&& L, T&& M); 
+    Eigen::VectorXd operator* (Eigen::VectorXd& f) const; |\label{op}|
+  private:
+    double k_; 
+    SparseMatrix L_, M_;
+    template<typename SincMatType, bool is_theta_zero>
+    friend class thetaSchemeTimeStepper; 
+};
+\end{lstlisting}
+For solving the linear system in \eqref{sinc_quad}, three methods were implemented and the computational time for each was then reported. More precisely, the first method was to apply the LU-factorization and to solve the system using the sparse-LU solver of type \lstinline{Eigen::SparseLU<Eigen::SparseMatrix<double>>}. For the iterative conjugate gradient descent, we make use of the solver of type \lstinline{Eigen::ConjugateGradient<SparseMatrix<double>, Lower|Upper, _Preconditioner>} where the \lstinline{_Preconditioner} template parameter is set to \lstinline{Eigen::IdentityPreconditioner} for the CGD and to \lstinline{Eigen::DiagonalPreconditioner} for the PCGD.
+For the CGD, we applied the algorithm to solve 
+\begin{equation*}
+(\myexp^{2lk}\stiff+\mass)\mathbf{x} = \mathbf{b},
+\end{equation*}
+as for the PCGD, we applied diagonal preconditioning, that is we applied the CGD algorithm to the system
+\begin{equation*}
+\mathbf{D}^{-1}(\myexp^{2lk}\stiff+\mass)\mathbf{x} = \mathbf{D}^{-1}\mathbf{b}, \  \mathbf{D} = \text{diag}(\myexp^{2lk}\stiff+\mass). 
+\end{equation*}
+
+Code \eqref{MatVec} shows the implementation of the member method in line \eqref{op} of code \eqref{sinc_matrix_class}. Avoiding the explicit for loop, we make use of the standard library function \lstinline{std::for_each()} to perform the sum in equation \eqref{sinc_quad}.
+
+\begin{lstlisting}[caption={$\sinc$ matrix-vector multiplication.}, label={MatVec}]
+/** 
+ * @member operator*
+ *
+ * @brief Performing the matrix-vector product Q*f 
+ *
+ * @param f the vector f 
+ * @return the product Q*f
+ *
+ */
+Eigen::VectorXd SincMatrix::operator* (Eigen::VectorXd& f) const{
+  if (M_.cols() != f.size())
+    throw std::length_error("Matrix-vector sizes do not match!"); 
+ 
+  Eigen::VectorXd res = Eigen::VectorXd::Zero(f.size()); 
+
+  double Cb = M_PI/(2*std::sin(M_PI*beta)); 
+
+  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower|Eigen::Upper,
+      Eigen::IdentityPreconditioner> PCGD_Solver; 
+  PCGD_Solver.setMaxIterations(1000);
+  PCGD_Solver.setTolerance(1e-10);
+  
+  Eigen::SparseLU<Eigen::SparseMatrix<double>> SparseLU_Solver; 
+
+  std::for_each(K_.data(), K_.data()+K_.size(), [&](double arg){
+       PCGD_Solver.compute(M_+std::exp(2*arg*k_)*L_);
+       res = res + (k_/Cb)*std::exp(2*beta*arg*k_)*PCGD_Solver.solve(f); });
+
+  return res; 
+}
+\end{lstlisting}
+
+%------------------------------ Dirichlet boundary conditions
+\subsection{Dirichlet Boundary Conditions}
+In the 1D problem, the Galerkin matrices are triadiognal, and the ordering of the nodes makes it easy to impose the 0 Dirichlet boundary conditions on the Galerkin matrices, by changing the entries corresponding to the first and the last nodes. That is the corresponding rows and columns entries are set to 0, except the diagonal entry is set to 1, according to the following transformation
+\[
+	%M = 
+	\begin{pmatrix}
+	 a_1& b_1 \\ 
+	 c_1   & a_2 & b_2 & \\ 
+	 & c_2 & a_3 & b_3\\ 
+	 & & \ddots& \ddots & \ddots \\
+	 & & & c_{N-2}&  a_{N-1} & b_{N-1}\\
+	 & & & & c_{N-1} & a_{N} \\  
+	\end{pmatrix}
+	\implies
+		\begin{pmatrix}
+	 1 & 0 \\ 
+	 0  & a_2 & b_2 \\ 
+	  & c_2 & a_3 & b_3\\ 
+	 & & \ddots& \ddots & \ddots \\
+	 & & & c_{N-2}&  a_{N-1} & 0\\
+	 & & & & 0 & 1 \\  
+	\end{pmatrix}
+\]
+In fact, that is what the function \lstinline{imposeZeroDirichletBoundaryConditions}, implemented in \textit{space\_discr.h} does.
+\begin{lstlisting}[caption={Boundary edge selector.}, label={selector}]
+/* Enforce dirichlet BC, 0 on the boundaries of the domain */
+  lf::mesh::utils::CodimMeshDataSet<bool>
+    		bd_flags = lf::mesh::utils::flagEntitiesOnBoundary(mesh_p,2); 
+  std::function<bool(unsigned int dof_idx)> bd_selector_d=
+      [&] (unsigned int dof_idx){
+      return bd_flags(dofh.Entity(dof_idx));
+  };
+\end{lstlisting}
+However in the 2D case, the nodes are not ordered as in the 1D case and can be indexed arbitrarly. That's why we need a function that tells us whether a given node is a boundary node. That is what the function \lstinline{bd_selector_d} in code \eqref{selector} does. In fact, the latter function takes an index and returns a boolean indicating whether a node associated with that index is a boundary node. Finally, the boundary selector is passed to the function \lstinline{void dropMatrixRowsColumns(SELECTOR &&selectvals, lf::assemble::COOMatrix<SCALAR> &A)}, along with the Galerkin matrix in triplet format, and performs the previously discussed transformation of the corresponding rows and columns.  
+
+%------------------------------ time stepping
+\subsection{Time Stepping}
+The code snippet \ref{time_stepper_class} defined in \textit{time\_stepper.h} provides the $\theta$-scheme time stepper class. This class stores the Galerkin matrices as private members, and that are required for the calculations of the solution at each time step.  
+\begin{lstlisting}[caption={Time stepper class.}, label={time_stepper_class}]
+/**
+ * @class thetaSchemeTimeStepper
+ *
+ * @brief Performing the \theta scheme time stepping.
+ *
+ * @tparam SincMatType the type of sinc matrix
+ * @tparam is_beta_zero a boolean to distinguish between 
+ *         fractional and non-fractional cases
+ *
+ */
+template<typename SincMatType, bool is_beta_zero> 
+class thetaSchemeTimeStepper{
+  public: 
+    thetaSchemeTimeStepper() = delete;
+
+    /// Move and copy constructors 
+    thetaSchemeTimeStepper(SincMatType&& Q, SparseMatrix&& A, 
+	double dt, double h, double N_dofs);
+    thetaSchemeTimeStepper(const SincMatType& Q, const SparseMatrix& A, 
+	double dt, double h, double N_dofs);
+
+    /// \Psi^{\tau} (u(t)) = u(t+\tau)
+    template<bool it_is = is_beta_zero>
+      typename std::enable_if<it_is,Eigen::VectorXd>::type
+      discreteEvolutionOperator(Eigen::VectorXd&) const; 
+    template<bool it_is = is_beta_zero>
+      typename std::enable_if<!it_is,Eigen::VectorXd>::type 
+      discreteEvolutionOperator(Eigen::VectorXd&) const;
+
+    virtual ~thetaSchemeTimeStepper() = default;
+  private: 
+    double dt_, h_; int N_dofs_;  
+    SparseMatrix A_; /// The stiffness matrix w/o MQL
+    SparseMatrix L_; /// FEM approx. of \mathcal{L}
+    SparseMatrix M_; /// The mass matrix
+    SincMatType Q_; /// FEM approx. of \mathcal{L}^{-beta = -(1-\beta)}
+    Eigen::SparseLU<Eigen::SparseMatrix<double>> solver_; /// for non-fractional case
+};
+\end{lstlisting}
+The main member method \lstinline{Eigen::VectorXd discreteEvolutionOperator_cgd(Eigen::VectorXd&) const;} takes the solution vector $\sol$ at time $t$ and returns it at time $t+\tau$ according to equation \eqref{disc_ev_op}. Note that this method is overloaded, and its implementation depends on the value of $\beta$. If $\beta \neq 1$, the method implements the CGD algorithm applied to equation \eqref{full_disc}. Otherwise, the system in \eqref{full_disc} is solved using a sparse-LU decomposition.\\
+The following code \eqref{cgd} provides the conjugate gradient descent algorithm implementation.\\
+\begin{lstlisting}[caption={The conjugate gradient descent.}, label={cgd}]
+/** 
+ * @member discreteEvolutionOperator
+ *
+ * @overload
+ *
+ * Conjugate gradient descent is implemented for fractional case
+ *
+ * @throws std::overflow_error if residuals in the CGD diverge
+ *
+ */
+template<typename SincMatType, bool is_beta_zero> 
+template<bool it_is> typename std::enable_if<!it_is,Eigen::VectorXd>::type
+thetaSchemeTimeStepper<SincMatType,
+  			is_beta_zero>::discreteEvolutionOperator(
+     Eigen::VectorXd& u_prev) const{
+  /// Conjugate gradient descent algorithm for the non-fractional case
+  size_t n = 0; 
+  Eigen::VectorXd u_next = Eigen::VectorXd::Zero(u_prev.size()); 
+  Eigen::VectorXd tmp = L_ * u_prev;
+  Eigen::VectorXd rhs_vec = M_*u_prev - 
+    		dt_*(1-theta) * (A_*u_prev + M_*(Q_*tmp) ); 
+  Eigen::VectorXd tmpp = L_ * u_next;
+  Eigen::VectorXd old_resid = rhs_vec - (M_*u_next + theta*dt_*
+      			(A_*u_next+M_*(Q_*tmpp) ) );
+  if (old_resid.norm() < tol)
+    return u_next; 
+  else{
+    Eigen::VectorXd p = old_resid; 
+    Eigen::VectorXd new_resid = old_resid;
+    while (new_resid.norm() > tol){
+      if (new_resid.norm() > 1e3)
+	throw std::overflow_error("The residual is diverging in CGD!");
+      if (n > maxIterations)
+	throw std::overflow_error("Maximum CGD iterations reached!");
+      old_resid.swap(new_resid);  
+      tmp = L_ * p; 
+      Eigen::VectorXd Stiff_times_p = M_*p + 
+		theta * dt_ * (A_*p + M_*(Q_*tmp)); 
+      double alpha = old_resid.dot(old_resid) / 
+			old_resid.dot(Stiff_times_p);
+      u_next += alpha * p; 
+      new_resid = old_resid - alpha * Stiff_times_p;
+      double beta_tmp = new_resid.dot(new_resid) / old_resid.dot(old_resid); 
+      p = new_resid + beta_tmp * p;
+      n++; 
+    }
+    return u_next; 
+  }
+}
+
+\end{lstlisting}

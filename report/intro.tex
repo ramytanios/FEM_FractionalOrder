@@ -1,0 +1,55 @@
+\section{Introduction}
+In mathematical finance 
+and especially in option pricing, 
+price processes 
+are typically modeled as 
+solutions 
+to stochastic differential equations 
+driven either by Brownian motions 
+in order to obtain 
+continuous-in-time price processes\cite{BS}, 
+or by Poisson processes if 
+sample paths of 
+the price processes are assumed to exhibit
+a finite number of jumps\cite{Merton}.
+
+More specifically, in the case of a Brownian motion, 
+the stock price is modeled by a large number of independent price changes 
+under the assumption of finite variance. 
+Dropping the latter assumption, the 
+Generalised Central Limit Theorem\cite{GCLT} 
+states that the sum of i.i.d.\ random variables with heavy-tailed probability distributions, 
+after appropriate shifting and scaling, 
+follows a L\'{e}vy-stable distribution. In addition to that, the sequence of partial sums of the i.i.d. random variables then converges to a process that has jumps and indeed not to a Brownian Motion.
+
+Motivated by that, 
+we model the stock price by the sum of stochastic increments that follow a 
+limiting  L\'{e}vy-stable distribution. 
+More specifically, a L\'{e}vy price process $(X_t)_{t\ge0}$ with $X_{t^{-}}{=}\lim\limits_{s\to t, s<t} X_s$ for c\`{a}dl\`{a}g processes, solves 
+the L\'{e}vy-driven stochastic differential equation 
+\begin{equation} \label{sde}
+	\text{d}X_t = b(X_{t^-})\text{d}t + a(X_{t^-})^{1/\alpha}\der L_t^{\alpha}, \ X_0=x,
+\end{equation}
+where $(L_t^{\alpha})_{t\ge0}$ denotes an $\alpha-$stable L\'{e}vy process, 
+$\alpha \in (0,2]$. 
+
+For option pricing under Feller--L\'{e}vy models, we apply in this project deterministic numerical methods targeting the Kolmogorov forward equation in contrast to the widely used and non-deterministic Monte Carlo methods that rely on random numbers generation.
+
+
+
+More precisely, we use the \textbf{Feynman--Kac} theorem to state 
+the parabolic partial differential equation that governs the option price process, 
+where the infinitesimal generator of the Feller process gives rise 
+to a fractional power of the Laplace operator 
+and thus to a fractional heat equation. 
+The fractional Laplacian can then be represented in integral form 
+in terms of the non-fractional Laplacian\cite{pazi}. 
+We first present the Finite Element semi-discrete form 
+(i.e., after discretization in space) 
+with a special treatment of the fractional Laplacian, where the integral representation is approximated by a sinc quadrature\cite{Bonito}.
+Afterwards, we use the $\theta$-scheme for 
+the temporal discretization in order to formulate the fully discrete problem. 
+For the implementation part, we present the most important aspects of the object-oriented
+C++ implementation of the Finite Element method. We also compare different direct and iterative methods for solving linear systems. Finally, we run a convergence analysis of our FEM discretization 
+with regular mesh refinement and for different combinations of the parameters $\theta$ 
+and the fractional power of the Laplacian, and present results corresponding to finance applications.

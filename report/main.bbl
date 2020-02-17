@@ -1,0 +1,52 @@
+\begin{thebibliography}{1}
+
+\bibitem{BS}
+{\sc Black, F., and Scholes, M.}
+\newblock The pricing of options and corporate liabilities.
+\newblock {\em The Journal of Political Economy 81}, 3, 637–654,.
+
+\bibitem{Bonito}
+{\sc Bonito, A., and Pasciak, J.}
+\newblock Numerical approximation of fractional powers of elliptic operators.
+\newblock {\em Mathematics of Computation 84\/} (2015).
+
+\bibitem{Bottcher}
+{\sc B\"{o}ttcher, B., Schilling, R., and Wang, J.}
+\newblock {\em L\'{e}vy Mattres III, L\'{e}vy-Type Processes: Construction,
+  Approximation and Sample Path Properties.}
+\newblock Springer, 2013.
+
+\bibitem{schwab}
+{\sc Hilber, N., Reichmann, O., Schwab, C., and Winter, C.}
+\newblock {\em Computational Methods for Quantitative Finance}.
+\newblock Springer Finance, Springer Heidelberg New York Dordrecht London,
+  2013.
+
+\bibitem{komatsu}
+{\sc Komatsu, T.}
+\newblock On the pathwise uniqueness of solutions of one-dimensional stochastic
+  differential equations of jump type.
+\newblock {\em Proc. Japan Acad. Ser. A Math. Sci. 58}, 8, 353--356,.
+
+\bibitem{Merton}
+{\sc Merton, R.}
+\newblock Option pricing when underlying stock returns are discontinuous.
+\newblock {\em Journal of Financial Economics 46}, 3, 125–144,.
+
+\bibitem{pazi}
+{\sc Pazi, A.}
+\newblock {\em Semigroups of Linear Operators and Applications to Partial
+  Differential Equations.}
+\newblock Springer, 1983.
+
+\bibitem{GCLT}
+{\sc Samorodnitsky, G., and Taqqu, M.}
+\newblock {\em Stable Non-Gaussian Random Processes}.
+\newblock Chapman Hall, 1st edition, 1994.
+
+\bibitem{yamada}
+{\sc Yamada, T., and Watanabe, S.}
+\newblock On the uniqueness of solutions of stochastic differential equations.
+\newblock {\em J. Math. Kyoto Univ}, 11, 15--167,.
+
+\end{thebibliography}

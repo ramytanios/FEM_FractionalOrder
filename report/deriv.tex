@@ -1,0 +1,154 @@
+\section{Theoretical Derivations}
+The arbitrage-free price of financial products with payoff $g$ at time $t \in [0,T]$, is given by
+\begin{equation*} \label{price_exp}
+V(t,x) = \mathbb{E}[\myexp^{-rT}g(X_T) | X_t=x], 
+\end{equation*}
+where $r$ is the risk-free interest rate. Transforming to time-to-maturity, the \textbf{Feynman--Kac} theorem states that the price $v(t,x):=V(T-t,x)$ is given by the Kolmogorov forward equation
+\begin{equation} \label{pde}
+\left\{
+  \begin{array}{@{}ll@{}}
+    v_t(t,x) - \mathcal{A}v(t,x) + rv(t,x) = 0, & \text{in}\ \mathbb{R}_{>0}\times\mathbb{R}_{>0}, \\
+    v(0,x) = g(x), & \forall \ x\in\mathbb{R}_{>0}.
+  \end{array}\right.
+\end{equation} 
+In equation \eqref{pde}, the differential operator $\mathcal{A}$ is the generator of the L\'{e}vy price process $(X_t)_{t\ge0}$ that solves the L\'{e}vy-driven stochastic differential equation
+\begin{equation*} \label{levy_sde}
+\der X_t = b(X_{t^-})\der t + a(X_{t^-})^{1/\alpha}\der L_t^{\alpha}, \ \ \ X_0=x, 
+\end{equation*}
+where $(L_t^{\alpha})_{t\ge0}$ denotes an $\alpha-$stable L\'{e}vy process, $\alpha \in (0,2]$, and $a,b$ some appropriate functions.
+The solution of the latter stochastic differential equation is a Feller 
+process\cite{Bottcher}. Assuming that there is an increasing concave function $\kappa(x)$ on $[0,+\infty)$ such that\cite{yamada}
+\begin{equation*}
+\kappa(0){=}0, \quad \int_{0}^{\infty}\kappa^{-1}(x)\der x=+\infty\quad\text{and}\quad|b(x)-b(y)|\le\kappa(|x-y|)\quad\forall x,y\in\mathbb{R},
+\end{equation*}
+holds, and if there exists an increasing function $\rho(x)$ on $[0,+\infty)$ such that 
+\begin{equation*}
+\rho(0){=}0,\quad \int_{0}^{\infty}\rho(x)^{-1}\der x = \infty\quad\text{and}\quad|a(x)^{1/\alpha} - a(y)^{1/\alpha}|^{\alpha} \le \rho(|x-y|)\quad\forall x,y \in \mathbb{R},
+\end{equation*}
+holds, Komatsu\cite{komatsu} showed that, for $\alpha \in (1,2)$, \eqref{sde} admits a pathwise unique solution. For $\alpha \in (0,1]$, if additionally $\rho(x)$ is concave and satisfies $|a(x)^{1/\alpha} - a(y)^{1/\alpha}| \le \rho(|x-y|)$ for all $x,y \in \mathbb{R}$, then we obtain existence and uniqueness of the solution to \eqref{sde}.
+On the other side, one can show that $(X_t)_{t\ge0}$ is a Feller process\cite{Bottcher} and that
+\begin{equation} \label{generator}
+\mathcal{A} = b(x)\partial_x - a(x)(-\partial_{xx})^{\alpha/2}.
+\end{equation}
+
+Combining equations \eqref{pde} and \eqref{generator}, the parabolic pricing PDE is given by
+\begin{equation*} \label{pricing_eq}
+\left\{
+  \begin{array}{@{}ll@{}}
+    v_t(t,x) - b(x)\partial_xv(t,x) + a(x)(-\partial_{xx})^{\alpha/2}v(t,x) + rv(t,x) = 0, & \text{in}\ \mathbb{R}_{>0}\times\mathbb{R}_{\ge0}, \\
+    v(0,x) = g(x), & \forall x\in\mathbb{R}_{\ge0}.
+  \end{array}\right.
+\end{equation*}
+
+More generally, given a reaction-diffusion linear elliptic and symmetric second-order differential operator $\mathcal{L}$ with appropriate boundary conditions, we consider after truncating the price domain to the open domain $\truncdom:=(0,R)$, the homogeneous Dirichlet parabolic problem
+\begin{equation} \label{gen_pricing_eq}
+\left\{
+  \begin{array}{@{}ll@{}}
+    v_t(t,x) + \tilde{b}(x)\partial_xv(t,x) + \tilde{c}(x)v(t,x) + \tilde{a}(x)\mathcal{L}^{\beta}v(t,x) = 0, & \text{in}\ \mathbb{R}_{>0}\times\ \truncdom, \\
+    v(t,0) = v(t,R) = 0, & \forall t \  \in \  \mathbb{R}_{>0},\\
+    v(0,x) = g(x), &  \forall  x\in\mathbb{R}_{\ge0}.
+  \end{array}\right.
+\end{equation}
+where $R >0$, $\tilde{a}(x)>0 \ \forall x\in\truncdom$ and $\beta \in (0,1).$ \\
+
+From the theory of semigroups of linear operators, and given $\alpha \in (0,1)$ and a Banach space $X$, the negative fractional power of $\mathcal{L}: X \to X$, namely $\mathcal{L}^{-\alpha}$ is given by the integral\cite{pazi}
+\begin{align*}
+\mathcal{L}^{-\alpha} := \frac{\sin(\alpha\pi)}{\pi}\int_0^{\infty} t^{-\alpha}(t\id+\mathcal{L})^{-1}\der t,
+\end{align*}
+where $\id:X\to X$ is the identity operator. One can show that this integral converges in Bochner sense with respect to $L(X)$, where $L(X)$ is the space of linear operators on $X$. On the other side, $\mathcal{L}^{-\alpha}$ can also be written in terms of the analytic semigroup $T(t):\mathbb{R}_{\ge0}\to L(X)$ whose infinitesimal generator is given by $-\mathcal{L}$. That is using the Laplace transform $(t\id+\mathcal{L})^{-1} = \int_0^{\infty}\text{e}^{-st}T(s)\der s$, in integral form we have
+\begin{align*}
+\mathcal{L}^{-\alpha} = \frac{1}{\Gamma(\alpha)}\int_0^{\infty} t^{\alpha-1}T(t)\der t.
+\end{align*}
+Using the properties of the fractional power operator, we can write $\mathcal{L}^{\beta} = \mathcal{L}^{-(1-\beta)}\mathcal{L}$ where $\mathcal{L}^{-(1-\beta)}$ can be written in integral form as
+\begin{align*}
+\mathcal{L}^{-(1-\beta)} &= \frac{\sin(\pi(1-\beta))}{\pi} \int_0^{\infty} \lambda^{-(1-\beta)}(\lambda \id + \mathcal{L})^{-1}\der\lambda \\
+& =\frac{2\sin(\pi(1-\beta))}{\pi} \int_{-\infty}^{\infty} \text{e}^{2(1-\beta) x}(\id+\text{e}^{2x}\mathcal{L})^{-1} \der x,
+\end{align*}
+where the second equality is obtained from the change of variables $\lambda = \text{e}^{-2x}$. The latter integral is then approximated by numerical quadrature integration and this will be addressed in the following sections.  
+
+
+% ---------------------- Discretization In Space 
+\subsection{Finite Element Spatial Discretization} 
+For a mesh $\mathcal{M}$ of the domain $D$, we define the space $\mathcal{S}_1^0(\mathcal{M})$ to be the space of all continuous piecewise linear functions on $D$. More formally, 
+\begin{equation*}
+\mathcal{S}_1^0(\mathcal{M}):= \{v:D\to\mathbb{R} \ \text{such that} \  v \in C^0(D),\quad v\in \mathcal{P}_1(K) \ \forall K\in\mathcal{T}(\mathcal{M}) \},
+\end{equation*}
+where $\mathcal{T}(\mathcal{M})$ is the set of all elements of the mesh $\mathcal{M}$. We denote by $\discspace$ the finite element space discretized by the means of Lagrangian linear finite elements, such that $\discspace \subset \mathcal{S}_1^0(\mathcal{M}) $, where the $0$ subscript in $\discspace$ indicates the homogoneous Dirichlet boundary conditions. The corresponding basis of $\discspace$ is $\mathcal{B} = \{\phi_1,\dots,\phi_{\dofs}\}$ consisting of the hat functions, where $\dofs = \text{dim}(V_{0,\dofs})$.
+We denote by $\sol(t)\in \mathbb{R}^{\dofs}$ the $\mathcal{B}$-basis expansion coefficients vector of the finite element solution $v_{\dofs}(x,t)$ at a given time $t$. The discrete variational problem then reads
+\begin{equation}\label{discrete_vf}
+\begin{gathered} 
+\forall t \in (0,T],   \ \text{find}  \ v_{\dofs}(t,x) \in \discspace  \ \text{such that} \\ 
+m_{\dofs}(\dot{v}_{\dofs}(t,x), \psi_{\dofs}(x)) + \tilde{a}_{\dofs}(v_{\dofs}(t,x), \psi_{\dofs}(x)) = 0, \ \forall \psi_{\dofs} \in \discspace,
+\end{gathered}
+\end{equation}
+where 
+\begin{align*}
+\begin{split}
+&m_{\dofs}(u,v) = \langle u,v \rangle_{L^2(\truncdom)},\\
+ &\tilde{a}_{\dofs}(u,v) = \langle\tilde{b}(x)\partial_xu,v\rangle_{L^2(\truncdom)} + \langle\tilde{c}(x)u,v\rangle_{L^2(\truncdom)} + \langle\tilde{a}(x)\mathcal{L}^{-(1-\beta)}\mathcal{L}u,v\rangle_{L^2(\truncdom)} .
+ \end{split}
+\end{align*}
+We introduce the matrices
+\begin{align*}
+\begin{split}
+&\mass = [\langle \phi_j,\phi_i\rangle_{L^2(\truncdom)}]_{i,j=1}^N, \\
+&\mass^{\tilde{c}(x)} = [\langle\tilde{c}(x)\phi_j,\phi_i \rangle_{L^2(\truncdom)}]_{i,j=1}^N, \\
+&\mass^{\tilde{a}(x)} = [\langle\tilde{a}(x)\phi_j,\phi_i \rangle_{L^2(\truncdom)}]_{i,j=1}^N, \\
+& \mathbf{B}^{\tilde{b}(x)} = [\langle\tilde{b}(x)\partial_x\phi_j,\phi_i \rangle_{L^2(\truncdom)}]_{i,j=1}^N,
+\end{split}
+\end{align*}
+and $\stiff$ the FE-approximation of $\mathcal{L}$. 
+
+% -------------------------------- Sinc Quadrature
+\subsection{Sinc Quadrature} 
+The integral representation of $\mathcal{L}^{-(1-\beta)}$ is approximated by the sinc quadrature\cite{Bonito}
+\begin{equation} \label{sinc_nd}
+\mathcal{L}^{-(1-\beta)} \approx \frac{2\sin(\pi(1-\beta))}{\pi} k \sum_{l=-K^-}^{K+} \text{e}^{2(1-\beta)lk}(\text{e}^{2lk}\mathcal{L}+\id)^{-1},
+\end{equation}
+where $k$ is the step size in the sinc quadrature, calibrated as Bonito and Pasciak\cite{Bonito} suggested for the case of elliptic problems, that is $k = -\log(h)$ where $h$ is the mesh size.
+We then introduce the matrix $\sinc$ as the FE-approximation of \eqref{sinc_nd} given by
+\begin{equation} \label{sinc_quad}
+\mathbf{Q} = \frac{2\sin(\pi(1-\beta))}{\pi} k \sum_{l=-K^-}^{K+} \text{e}^{2(1-\beta)lk}(\text{e}^{2lk}\stiff+\mass)^{-1}.
+\end{equation}
+In matrix form, the semi-discrete formulation of problem \eqref{discrete_vf} reads
+\begin{align*}
+\begin{split}
+\forall t \in (0,T],   \ &\text{find}  \ \sol(t) \in \mathbb{R}^{\dofs} \ \text{such that} \\ 
+&\mass\frac{\text{d}\sol}{\text{d}t}(t) + \tilde{\fullstiff}\sol(t) = 0, \\
+&\sol(0) = \mathcal{P}(g(x)),
+\end{split}
+\end{align*}
+where $\tilde{\fullstiff} =  \mathbf{A} + \mass^{\tilde{a}(x)}\sinc\stiff$ with $ \mathbf{A} := \mass^{\tilde{c}(x)} + \mathbf{B}^{\tilde{b}(x)}$, and $\mathcal{P}: \{\mathbb{R}_{>0} \to \mathbb{R}_{>0} \} \to \discspace$ the $L^2$-projection operator onto the discrete finite element space $\discspace$.
+
+% --------------------------- Time Discretization 
+\subsection{Time Discretization} 
+For the time discretization, we adopt the method of lines with the $\theta$-scheme applied to the following ODE in $\sol$
+\begin{equation} \label{ode}
+\frac{\text{d}\sol}{\text{d}t}(t) =-\mass^{-1}\tilde{\fullstiff}\sol(t). 
+\end{equation}
+To this extent, we define the discrete evolution operator $\discop: \mathbb{R}^N \to \mathbb{R}^N$ such that $\discop\sol(t) = \sol(t+\tau).$
+For the $\theta-$scheme with time step $\tau$, the discrete evolution operator applied to the ODE $\mathbf{y}_t(t) = \mathbf{f}(\mathbf{y}(t))$ is given by 
+\begin{equation} \label{disc_ev_op}
+\discop \mathbf{y}(t) = \mathbf{y(t)} +\tau[\theta\mathbf{f}(\mathbf{\mathbf{y}(t+\tau)}) + (1-\theta)\mathbf{f}(\mathbf{\mathbf{y}(t+\tau)})].
+\end{equation}
+Applying scheme \eqref{disc_ev_op} to equation \eqref{ode}, we obtain the fully discrete model
+\begin{equation} \label{full_disc}
+[\mass+\tau\theta\tilde{\fullstiff}]\sol^m = [\mass - \tau(1-\theta)\tilde{\fullstiff}]\sol^{m-1},  \ \forall m=1,\dots,M. 
+\end{equation}
+
+%that is 
+%\begin{equation} \label{full_disc_full}
+%\discop\sol^{m-1} = \sol^m =[\mass+\tau\theta\tilde{\fullstiff}]^{-1} [\mass - \tau(1-%\theta)\tilde{\fullstiff}]\sol^{m-1},  \ \forall m=1,\dots,M.
+%\end{equation}
+
+% ----------------------------- Iterative methods to solve linear systems 
+\subsection{Iterative Methods for Solving Linear Systems}
+Solving the linear system in equation \eqref{sinc_quad} was firstly done using a direct LU-factorization applied to the system 
+\begin{equation} \label{system}
+(\myexp^{2lk}\stiff+\mass)\mathbf{x} = \mathbf{b}.
+\end{equation}
+Two iterative methods were then implemented to solve system \eqref{system}, namely the conjugate gradient descent(CGD) and the preconditioned conjugate gradient descent(PCGD). For the PCGD, we apply diagonal preconditioning, that is we apply the CGD algorithm to the system
+\begin{equation*}
+\mathbf{D}^{-1}(\myexp^{2lk}\stiff+\mass)\mathbf{x} = \mathbf{D}^{-1}\mathbf{b}, \quad  \mathbf{D} = \text{diag}(\myexp^{2lk}\stiff+\mass). 
+\end{equation*}
+On the other side, for the time stepping in equation \eqref{full_disc}, inverting the matrix $[\mass+\tau\theta\tilde{\fullstiff}]$ in equation \eqref{full_disc} requires the inversion the matrix $\sinc$. However, and since $\sinc$ is not known explicitly and can only be accessed by matrix vector multiplication,  solving the linear system \eqref{full_disc} requires an iterative solver. To that extent, we apply the CGD algorithm to the system $\eqref{full_disc}$ at each time step, with an appropriate tolerance value as a stopping criteria for the algorithm.

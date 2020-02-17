@@ -1,0 +1,7 @@
+\contentsline {figure}{\numberline {1}{\ignorespaces The $L^2$-norm of the discretization error versus the mesh size $h$ for the Explicit Euler, Implicit Euler and the Crank--Nicolson schemes. \relax }}{16}{figure.caption.18}
+\contentsline {figure}{\numberline {2}{\ignorespaces The $L^{\infty }$-norm of the discretization error versus the mesh size $h$ for the Explicit Euler, Implicit Euler and the Crank--Nicolson schemes. \relax }}{17}{figure.caption.19}
+\contentsline {figure}{\numberline {3}{\ignorespaces The solution of the 2D fractional heat equation.\relax }}{18}{figure.caption.21}
+\contentsline {figure}{\numberline {4}{\ignorespaces The price of European options under Feller--L\'{e}vy models (orange), together with the payoff (blue). For comparison: the corresponding price values in the Black-Scholes market (green).\relax }}{19}{figure.caption.23}
+\contentsline {figure}{\numberline {5}{\ignorespaces Evolution of the condition number $\kappa $ for the case of the fractional heat equation and the pricing problem for N=50 and N=70. The solid lines correspond to the CGD and the dashed lines correspond to the PCGD.\relax }}{20}{figure.caption.26}
+\contentsline {figure}{\numberline {6}{\ignorespaces The $L^{2}$-norm of the discretization error versus the mesh size $h$ for $\theta \in \{1/4, 3/4 \}$. \relax }}{23}{figure.caption.31}
+\contentsline {figure}{\numberline {7}{\ignorespaces The $L^{\infty }$-norm of the discretization error versus the mesh size $h$ for $\theta \in \{1/4, 3/4 \}$. \relax }}{23}{figure.caption.32}

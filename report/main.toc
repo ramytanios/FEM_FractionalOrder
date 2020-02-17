@@ -1,0 +1,19 @@
+\contentsline {section}{Introduction}{3}{section*.5}
+\contentsline {section}{Theoretical Derivations}{4}{section*.6}
+\contentsline {subsection}{Finite Element Spatial Discretization}{5}{section*.7}
+\contentsline {subsection}{Sinc Quadrature}{5}{section*.8}
+\contentsline {subsection}{Time Discretization}{6}{section*.9}
+\contentsline {subsection}{Iterative Methods for Solving Linear Systems}{6}{section*.10}
+\contentsline {section}{C++ Object-Oriented Implementation}{7}{section*.11}
+\contentsline {subsection}{Galerkin Matrices Assembly}{7}{section*.12}
+\contentsline {subsection}{Sinc Quadrature}{9}{section*.13}
+\contentsline {subsection}{Dirichlet Boundary Conditions}{11}{section*.14}
+\contentsline {subsection}{Time Stepping}{11}{section*.15}
+\contentsline {section}{Numerical Experiments}{14}{section*.16}
+\contentsline {subsection}{The 1D Fractional Heat Equation - Convergence Results}{14}{section*.17}
+\contentsline {subsection}{The 2D Fractional Heat Equation}{17}{section*.20}
+\contentsline {subsection}{An Application to Option Pricing}{17}{section*.22}
+\contentsline {subsection}{Comparison of Direct and Iterative Solvers}{19}{section*.24}
+\contentsline {section}{Conclusion}{21}{section*.27}
+\contentsline {section}{Appendix}{23}{section*.29}
+\contentsline {subsection}{Additional Convergence Results}{23}{section*.30}
