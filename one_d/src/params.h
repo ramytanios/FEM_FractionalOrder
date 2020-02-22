@@ -3,7 +3,7 @@
 
 
 constexpr size_t maxIterations = 1000; 
-constexpr double tol = 1e-10; 
+constexpr double tol = 1e-5; 
 
 constexpr double theta = 0.5;
 constexpr double beta = 0.5; /// = 1 - \beta = 1 - \alpha/2

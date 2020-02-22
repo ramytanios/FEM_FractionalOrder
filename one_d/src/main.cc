@@ -1,5 +1,5 @@
 #include "space_discr.h"
-#include "time_stepper_new.h"
+#include "time_stepper.h"
 #include "pde_weights.h"
 #include "Q.h"
 #include "routines.h" 
@@ -10,7 +10,7 @@
 int main(int argc, char** argv) {
   
   double T = 1; 
-  size_t N_0 = 50; /// (N_0+1) nodes on the coarsest mesh
+  size_t N_0 = std::stoi(argv[1]); /// (N_0+1) nodes on the coarsest mesh
   size_t Levels = 1; /// Number of levels in mesh hierarchy 
   double a=0, b=1; /// Spatial domain [a,b]; 
 

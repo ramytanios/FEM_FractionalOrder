@@ -81,7 +81,7 @@ thetaSchemeTimeStepper<SincMatType, is_beta_zero>::thetaSchemeTimeStepper(
   Ma_(Ma), 
   Lhs_Wrapped_(M_, A_,Ma_,L_,Q_,dt_), IterativeSolver_(Lhs_Wrapped_)
 {
-    IterativeSolver_.setTolerance(1e-10);
+    IterativeSolver_.setTolerance(1e-5);
     IterativeSolver_.setMaxIterations(1000);
     solver_.compute(M_+dt_*theta*(A_+L_));
 }
