@@ -34,7 +34,7 @@ namespace PdeWeights{
   std::function<double(double)> gamma_x = 
     [] (double x)-> double{
       (void)x; 
-      return r;
+      return 0;
     };
   
   /**
@@ -50,7 +50,7 @@ namespace PdeWeights{
   std::function<double(double)> beta_x = 
     [] (double x)-> double{
       (void)x; 
-      return -r*x; 
+      return 0;
     };
 
   /**
@@ -65,10 +65,7 @@ namespace PdeWeights{
    */ 
   std::function<double(double)> initial_cond = 
    [](double x)->double{
-     if (x>10)
-       return 1;
-     else
-       return 0;
+       return x*(1-x);
    };
 
   /**

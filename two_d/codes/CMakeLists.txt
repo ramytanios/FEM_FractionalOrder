@@ -11,5 +11,4 @@ project(codes)
 # Include Subdirectories
 ###############################################################################
 add_subdirectory(two_d)
-add_subdirectory(one_d)
 

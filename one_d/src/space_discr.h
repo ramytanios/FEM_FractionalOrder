@@ -67,7 +67,7 @@ void imposeZeroDirichletBoundaryConditions(SparseMatrix_t& A, size_t N){
   /* Using coeffRef is not expensive since entries already exist. */ 
   /* Exploit the tridiagonal structure of the galerkin matrices.  */
     A.coeffRef(N-2,N-1) = 0; A.coeffRef(N-1,N-2) = 0; A.coeffRef(N-1,N-1) = 1; 
-//    A.coeffRef(0,0) = 1; A.coeffRef(0,1) = 0; A.coeffRef(1,0) = 0; 
+    A.coeffRef(0,0) = 1; A.coeffRef(0,1) = 0; A.coeffRef(1,0) = 0; 
  
 }
 /* */
@@ -304,99 +304,5 @@ Eigen::VectorXd getLoadVector(const Eigen::VectorXd& mesh, FUNCTOR f){
 
 } /* namespace GalerkinMatricesAssembly */
 
-/**
- * @class SincMatrix
- *
- * @brief Representing the sinc matrix Q, without storing its elements explicitly.
- *        Accessing the matrix Q through matrix-vector product by overloading the * operator.
- *        Given f \in \mathbb{R}^n, the * method returns Q*f.
- *
- */
-class SincMatrix{
-  public:
-    SincMatrix() = delete; 
-    template<typename T> 
-    SincMatrix(T&&); /// Move and copy constructors 
-    template<typename T> 
-    SincMatrix(double, T&& L, T&& M); 
-    Eigen::VectorXd operator* (Eigen::VectorXd& f) const; 
-    std::vector<double> kappa_; 
-  private:
-    double k_; 
-    SparseMatrix L_, M_;
-    Eigen::VectorXd K_; 
 
-    template<typename SincMatType, bool is_theta_zero>
-    friend class thetaSchemeTimeStepper;
-};
-
-template<typename T> 
-SincMatrix::SincMatrix(T&& other): 
-	k_(other.k_), L_(std::forward<T>(other.L_)),
-	M_(std::forward<T>(other.M_)),
-	K_(std::forward<T>(other.K_)){}
-
-template<typename T> 
-SincMatrix::SincMatrix(double h, T&& L, 
-    T&& M):
-      M_(std::forward<T>(M)), 
-	L_(std::forward<T>(L)) {
-  	k_ = -1/(std::log(h));
-	K_ = Eigen::VectorXd::LinSpaced(
-	    ceil(M_PI*M_PI / (4.*beta*k_*k_)) + ceil(M_PI*M_PI / (4.*(1-beta)*k_*k_)) + 1, 
-	    -ceil(M_PI*M_PI / (4.*beta*k_*k_)),  ceil(M_PI*M_PI / (4.*(1-beta)*k_*k_)) );
-	for (int i=0; i<K_.size(); i++){
-	  Eigen::MatrixXd Q = std::exp(2*k_*K_(i))*L_ + M_;
-	  Eigen::MatrixXd P = Q.diagonal().asDiagonal().inverse();
-	  Eigen::MatrixXd Qmod = P*Q;
-	  Eigen::JacobiSVD<Eigen::MatrixXd> svd(Qmod);
-	  Eigen::VectorXd singularValues = svd.singularValues(); 
-	  kappa_.push_back(singularValues(0)/singularValues(singularValues.size()-1)); 
-	}
-} 
-
-/** 
- * @member operator*
- *
- * @brief Performing the matrix-vector product Q*f 
- *
- * @param f the vector f 
- * @return the product Q*f
- *
- */
-Eigen::VectorXd SincMatrix::operator* (Eigen::VectorXd& f) const{
-  if (M_.cols() != f.size())
-    throw std::length_error("Matrix-vector sizes do not match!"); 
- 
-  Eigen::VectorXd res = Eigen::VectorXd::Zero(f.size()); 
-
-  double Cb = M_PI/(2*std::sin(M_PI*beta)); 
-
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower|Eigen::Upper,
-      Eigen::IdentityPreconditioner> PCGD_Solver; 
-  PCGD_Solver.setMaxIterations(1000);
-  PCGD_Solver.setTolerance(1e-10);
-  
-  Eigen::SparseLU<Eigen::SparseMatrix<double>> SparseLU_Solver; 
-
-  std::for_each(K_.data(), K_.data()+K_.size(), [&](double arg){
-       SparseLU_Solver.compute(M_+std::exp(2*arg*k_)*L_);
-       res = res + (k_/Cb)*std::exp(2*beta*arg*k_)*SparseLU_Solver.solve(f); });
-
-//  std::for_each(K_.data(), K_.data()+K_.size(), [&](double arg){
-//       SparseLU_Solver.compute(M_+std::exp(2*arg*k_)*L_);
-//       res = res + (k_/Cb)*std::exp(2*beta*arg*k_)*SparseLU_Solver.solve(f); });
-  
-//  std::for_each(K_.data(), K_.data()+K_.size(), [&](double arg){
-//      Eigen::SparseMatrix<double> lhs = M_+std::exp(2*arg*k_)*L_;
-//      res = res + (k_/Cb)*std::exp(2*beta*arg*k_)
-//       *ConjGradDescentSolver(lhs,f,Eigen::VectorXd::Zero(f.size())); }); 
-
-//  std::for_each(K_.data(), K_.data()+K_.size(), [&](double arg){
-//      Eigen::SparseMatrix<double> lhs = M_+std::exp(2*arg*k_)*L_;
-//      res = res + (k_/Cb)*std::exp(2*beta*arg*k_)
-//       *PrecondConjGradDescentSolver(lhs,f,Eigen::VectorXd::Zero(f.size())); }); 
-
-  return res; 
-}
 #endif
