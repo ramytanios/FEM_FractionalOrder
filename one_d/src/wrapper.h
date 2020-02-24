@@ -3,6 +3,7 @@
 #include "Q.h"
 #include <memory>
 #include <type_traits>
+
 class MatrixReplacement;
 namespace Eigen {
     namespace internal {

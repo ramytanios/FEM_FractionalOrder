@@ -26,8 +26,10 @@ if(COMPILER_SUPPORTS_WCONVERSION)
 endif()
 
 # define executables
-add_executable(conv src/conv_main.cc)
-add_executable(main src/main.cc)
+add_executable(conv src/conv_main.cc
+		    src/galerkin_mat.cc)
+add_executable(main src/main.cc
+	            src/galerkin_mat.cc)
 
 target_link_libraries (main Eigen3::Eigen)
 target_link_libraries (conv Eigen3::Eigen)

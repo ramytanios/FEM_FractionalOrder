@@ -2,7 +2,7 @@ cd build
 make 
 
 if [ "$1" = "solution" ]; then
-	./main 50 
+	./main 20 
 	python plot_sol.py
 elif [ "$1" = "error_conv" ]; then
 	./conv

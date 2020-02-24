@@ -1,7 +1,7 @@
 #ifndef PDE_WEIGHTS_HPP
 #define PDE_WEIGHTS_HPP
 
-#include "params.h"
+#include <functional> 
 
 namespace PdeWeights{
 
@@ -15,7 +15,7 @@ namespace PdeWeights{
    * @return a scalar the value of alpha at 'x'
    *
    */ 
-  std::function<double(double)> alpha_x =
+  inline std::function<double(double)> alpha_x =
     [] (double x)->double{
       (void)x; 
       return 1; 
@@ -31,7 +31,7 @@ namespace PdeWeights{
    * @return a scalar which is the value of gamma at 'x'
    *
    */ 
-  std::function<double(double)> gamma_x = 
+  inline std::function<double(double)> gamma_x = 
     [] (double x)-> double{
       (void)x; 
       return 0;
@@ -47,7 +47,7 @@ namespace PdeWeights{
    * @return a scalar the value of beta at 'x'
    *
    */ 
-  std::function<double(double)> beta_x = 
+  inline std::function<double(double)> beta_x = 
     [] (double x)-> double{
       (void)x; 
       return 0;
@@ -63,7 +63,7 @@ namespace PdeWeights{
    * @return a scalar the value of the initial condition at 'x'
    *
    */ 
-  std::function<double(double)> initial_cond = 
+  inline std::function<double(double)> initial_cond = 
    [](double x)->double{
        return x*(1-x);
    };
@@ -78,7 +78,7 @@ namespace PdeWeights{
    * @return a scalar the value of f at 'x'
    *
    */ 
-  std::function<double(double x)> f_x =
+  inline std::function<double(double x)> f_x =
     [] (double x) -> double{
       (void)x; 
       return 0;

@@ -84,7 +84,7 @@ void imposeZeroDirichletBoundaryConditions(SparseMatrix_t& A, size_t N){
  * @return the solution x
  *
  */ 
-Eigen::VectorXd ConjGradDescentSolver(Eigen::SparseMatrix<double>& A, 
+inline Eigen::VectorXd ConjGradDescentSolver(Eigen::SparseMatrix<double>& A, 
     Eigen::VectorXd& b, const Eigen::VectorXd& x0){
 
   const double tol = 1e-10; 
@@ -128,7 +128,7 @@ Eigen::VectorXd ConjGradDescentSolver(Eigen::SparseMatrix<double>& A,
  * @tparam diag the diagonal vector
  *
  */ 
-void SparseDiagonal(Eigen::SparseMatrix<double>& M, 
+inline void SparseDiagonal(Eigen::SparseMatrix<double>& M, 
     				Eigen::VectorXd& diag){
   //std::vector<Eigen::Triplet<double>> triplets(diag.size()); 
   for (int i=0; i<diag.size(); i++)
@@ -149,7 +149,7 @@ void SparseDiagonal(Eigen::SparseMatrix<double>& M,
  * @return the solution x
  *
  */ 
-Eigen::VectorXd PrecondConjGradDescentSolver(Eigen::SparseMatrix<double>& A, 
+inline Eigen::VectorXd PrecondConjGradDescentSolver(Eigen::SparseMatrix<double>& A, 
     Eigen::VectorXd& b, const Eigen::VectorXd& x0){
 
   const double tol = 1e-10; 

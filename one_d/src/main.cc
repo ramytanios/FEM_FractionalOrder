@@ -1,8 +1,9 @@
 #include "space_discr.h"
-#include "time_stepper.h"
 #include "pde_weights.h"
+#include "time_stepper_new.h"
 #include "Q.h"
 #include "routines.h" 
+#include "galerkin_mat.h" 
 #include <algorithm> 
 #include <iostream>
 #include <chrono>
@@ -28,35 +29,21 @@ int main(int argc, char** argv) {
     size_t N_dofs = mesh_structure.N_dofs_.at(curr_level); 
    
     std::cout << "Solving with N_dofs = " << N_dofs <<
-      ", h = " << h <<
-      ", theta = " << theta <<
-      " and beta = " << beta << std::endl;
+      ", h = " << h << ", theta = " << theta << " and beta = " << beta << std::endl;
     
     const double dt = std::pow(h, 2); 
     const int num_steps = T/dt; 
 
-    /* Galerkin matrices assembly and transformation to Sparse format */ 
+    /* Galerkin matrices assembly, transformation to Sparse format
+     and imposing Dirichlet boundary conditions. */ 
     std::cout << "Assembling Galerkin matrices. " << std::endl;
-
-    TripletForm L_Triplet =
-      GalerkinMatricesAssembly::getStiffnessMatrixWeighted_TripletForm(*mesh_p, PdeWeights::alpha_x); 
-    TripletForm Mr_Triplet = 
-      GalerkinMatricesAssembly::getMassMatrixWeighted_TripletForm(*mesh_p, PdeWeights::gamma_x); 
-    TripletForm M_Triplet = 
-      GalerkinMatricesAssembly::getMassMatrixWeighted_TripletForm(*mesh_p, [](double x){return 1;}); 
-    TripletForm B_Triplet =
-      GalerkinMatricesAssembly::getCrossMatrixWeighted_TripletForm(*mesh_p, PdeWeights::beta_x); 
-    TripletForm Ma_Triplet = 
-      GalerkinMatricesAssembly::getMassMatrixWeighted_TripletForm(*mesh_p, [&](double x){return 1;});
-    SparseMatrix A(N_dofs, N_dofs);
-    SparseMatrix L(N_dofs, N_dofs);
-    SparseMatrix M(N_dofs, N_dofs);
-    SparseMatrix Ma(N_dofs, N_dofs);
-    L.setFromTriplets(L_Triplet.begin(), L_Triplet.end());
-    A.setFromTriplets(B_Triplet.begin(), B_Triplet.end());
-    A.setFromTriplets(Mr_Triplet.begin(), Mr_Triplet.end());
-    M.setFromTriplets(M_Triplet.begin(), M_Triplet.end());
-    Ma.setFromTriplets(Ma_Triplet.begin(), Ma_Triplet.end());
+    Galerkin_Mat GalerkinMatSetup(N_dofs, mesh_p);
+    GalerkinMatSetup.setup_galerkin_mat(); 
+    GalerkinMatSetup.impose_dirichlet();
+    Eigen::SparseMatrix<double> M(*GalerkinMatSetup.M()); 
+    Eigen::SparseMatrix<double> L(*GalerkinMatSetup.L()); 
+    Eigen::SparseMatrix<double> Ma(*GalerkinMatSetup.Ma()); 
+    Eigen::SparseMatrix<double> A(*GalerkinMatSetup.A()); 
     /* ----END---- */ 
 
     /* Projecting initial condition on FEM space */ 
@@ -69,13 +56,6 @@ int main(int argc, char** argv) {
     Eigen::VectorXd u_h(u0.size()); 
     u_h = u0;
     
-    /* Boundary condtions */
-    imposeZeroDirichletBoundaryConditions(M, N_dofs); 
-    imposeZeroDirichletBoundaryConditions(A, N_dofs); 
-    imposeZeroDirichletBoundaryConditions(Ma, N_dofs); 
-    imposeZeroDirichletBoundaryConditions(L, N_dofs);
-    /* ----END---- */
-
     SincMatrix Q(h, L, M); 	
    
     /* Time stepping and solving  */ 
@@ -91,7 +71,6 @@ int main(int argc, char** argv) {
       << std::endl; 
     /* ----END---- */
 
-//    Eigen::VectorXd BS_price = DigitalBS(*mesh_p, K, r, sigma, 0, T);
     /* Writing results to text files */
     std::cout << "Writing data to text file." << std::endl;
     for (int i=0; i<u_h.size() ; i++)
@@ -101,8 +80,7 @@ int main(int argc, char** argv) {
     std::cout << "Solving ended!" << std::endl;
     std::cout << "--------------" << std::endl;
 //    std::for_each(Q.kappa_.begin(), Q.kappa_.end(), [&](double arg){
-//	file_tmp << arg << std::endl; }); 
+//	file_tmp << arg << std::endl; });
 }
-
   return 0;
 }
