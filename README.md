@@ -6,7 +6,7 @@
 <img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1">
 
 ## Overview
-The arbitrage-free price of financial products with payoff <img src="https://render.githubusercontent.com/render/math?math=g"> at time <img src="https://render.githubusercontent.com/render/math?math=t \in [0,T]">, is given by
+The arbitrage-free price of financial products with payoff <a href="https://www.codecogs.com/eqnedit.php?latex=g" target="_blank"><img src="https://latex.codecogs.com/gif.latex?g" title="g" /></a> at time <a href="https://www.codecogs.com/eqnedit.php?latex=t&space;\in&space;[0,T]" target="_blank"><img src="https://latex.codecogs.com/gif.latex?t&space;\in&space;[0,T]" title="t \in [0,T]" /></a>, is given by
 <img src="https://render.githubusercontent.com/render/math?math=V(t,x) = \mathbb{E}[\e^{-rT}g(X_T) | X_t=x]">.
 
 The price process follow <img src="https://render.githubusercontent.com/render/math?math=dX_t = b(X_{t^-})dt + a(X_{t^-})^{1/\alpha}d L_t^{\alpha}, \ \ \ X_0=x, ">, where  <img src="https://render.githubusercontent.com/render/math?math=(L_t^{\alpha})_{t\ge0}"> is an alpha-stable Lévy process.
@@ -15,6 +15,3 @@ Using the Feynman-Kac theorem, the fractional partial differential equation gove
 
 Finally, the finite element method is applied to the above equation to solve for the option price process. 
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=\mathbb{E}&space;&plus;&space;r" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\mathbb{E}&space;&plus;&space;r" title="\mathbb{E} + r" /></a>
-<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-<mrow><mstyle mathvariant='double-struck'><mrow><mi>E</mi></mrow></mstyle><mo>+</mo><mi>r</mi></mrow></math>
