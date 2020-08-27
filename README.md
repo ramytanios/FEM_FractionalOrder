@@ -16,3 +16,5 @@ Using the Feynman-Kac theorem, the fractional partial differential equation gove
 Finally, the finite element method is applied to the above equation to solve for the option price process. 
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=\mathbb{E}&space;&plus;&space;r" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\mathbb{E}&space;&plus;&space;r" title="\mathbb{E} + r" /></a>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+<mrow><mstyle mathvariant='double-struck'><mrow><mi>E</mi></mrow></mstyle><mo>+</mo><mi>r</mi></mrow></math>
