@@ -3,7 +3,6 @@
 * This repository contains the C++ codes for my work as a research assistant at the Seminar for Applied Mathematics at ETH Zürich. 
 * The topic of my project was: Option Pricing under Feller-Lévy models. 
 * The codes contain the Finite Element Method implementation for option pricing. 
-<img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1">
 
 ## Overview
 The arbitrage-free price of financial products with payoff <a href="https://www.codecogs.com/eqnedit.php?latex=g" target="_blank"><img src="https://latex.codecogs.com/gif.latex?g" title="g" /></a> at time <a href="https://www.codecogs.com/eqnedit.php?latex=t&space;\in&space;[0,T]" target="_blank"><img src="https://latex.codecogs.com/gif.latex?t&space;\in&space;[0,T]" title="t \in [0,T]" /></a>, is given by
