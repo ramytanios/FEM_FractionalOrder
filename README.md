@@ -16,5 +16,5 @@ Using the Feynman-Kac theorem, the fractional partial differential equation gove
 
 where r the risk free interest rate.
 
-Finally, the finite element method is applied to the above equation to solve for the option price process. However, a special numerical treatment is required for the discretization of the fractional laplace operator <a href="https://www.codecogs.com/eqnedit.php?latex=(-\Delta)^{\alpha/2}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?(-\Delta)^{\alpha/2}" title="(-\Delta)^{\alpha/2}" /></a>. 
+Finally, the finite element method is applied to the above equation to solve for the option price process. However, a special numerical treatment is required for the discretization of the fractional laplace operator <a href="https://www.codecogs.com/eqnedit.php?latex=(-\Delta)^{\alpha/2}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?(-\Delta)^{\alpha/2}" title="(-\Delta)^{\alpha/2}" /></a> and that is taken care of in this project. 
 
